@@ -72,8 +72,6 @@ const displayMovements = function (movements) {
   });
 };
 
-displayMovements(account1.movements);
-
 const calculateBalance = (movements) => {
   const balance = movements.reduce(
     (balance, movement) => (balance += movement),
@@ -82,30 +80,24 @@ const calculateBalance = (movements) => {
   labelBalance.textContent = `${balance} €`;
 };
 
-calculateBalance(account1.movements);
-
-const calculateDisplayBalance = (movements) => {
-  const incomes = movements
+const calculateDisplayBalance = function (account) {
+  const incomes = account.movements
     .filter((movement) => movement > 0)
     .reduce((sum, movement) => (sum += movement), 0);
   labelSumIn.textContent = `${incomes} €`;
 
-  const outcomes = Math.abs(
-    movements
-      .filter((movement) => movement < 0)
-      .reduce((sum, movement) => (sum += movement), 0)
-  );
+  const outcomes = account.movements
+    .filter((movement) => movement < 0)
+    .reduce((sum, movement) => (sum += movement), 0);
+  labelSumOut.textContent = `${Math.abs(outcomes)} €`;
 
-  labelSumOut.textContent = `${outcomes} €`;
-
-  const interests = movements
+  const interests = account.movements
     .filter((movement) => movement > 0)
-    .map((movement) => (movement * 1.2) / 100)
+    .map((movement) => (movement * account.interestRate) / 100)
     .filter((interest) => interest >= 1)
     .reduce((sum, movement) => (sum += movement), 0);
   labelSumInterest.textContent = `${interests} €`;
 };
-calculateDisplayBalance(account1.movements);
 
 const createUserNames = function (accounts) {
   accounts.forEach(function (account) {
@@ -118,3 +110,22 @@ const createUserNames = function (accounts) {
 };
 
 createUserNames(accounts);
+
+let currentAccount;
+
+btnLogin.addEventListener("click", function (event) {
+  event.preventDefault();
+  currentAccount = accounts.find(
+    (account) => account.userName === inputLoginUsername.value
+  );
+
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    labelWelcome.textContent = `Bienvendios otra vez, ${currentAccount.owner} `;
+    containerApp.style.opacity = 1;
+    inputLoginUsername.value = inputLoginPin.value = "";
+    inputLoginPin.blur();
+    displayMovements(currentAccount.movements);
+    calculateBalance(currentAccount.movements);
+    calculateDisplayBalance(currentAccount);
+  }
+});
